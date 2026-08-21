@@ -209,6 +209,33 @@
     margin:2px 0 16px;
   }
 
+  .results-summary { margin-bottom:16px; padding:14px 16px; background:var(--panel-sunken); border:1px solid var(--line); border-radius:4px; }
+  .summary-factors { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+  .summary-factors:last-child { margin-bottom:0; }
+  .summary-chip {
+    font-family:var(--font-mono); font-size:12.5px; color:var(--accent); background:var(--accent-soft);
+    border:1px solid var(--accent-line); padding:4px 10px; border-radius:2px;
+  }
+  .summary-specs { font-size:13px; color:var(--ink-soft); }
+
+  .results-actions { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  button.action-btn {
+    background:none; border:1px solid var(--line-strong); color:var(--ink-soft); padding:10px 18px;
+    font-size:14px; font-family:var(--font-body); font-weight:600; cursor:pointer; border-radius:2px;
+  }
+  button.action-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .result-chip { cursor:pointer; flex-direction:column; align-items:stretch; gap:0; }
+  .result-chip .chip-head { display:flex; align-items:baseline; gap:9px; }
+  .result-chip .breakdown {
+    display:none; flex-direction:column; gap:3px; margin-top:8px; padding-top:8px;
+    border-top:1px solid var(--line-strong); font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft);
+  }
+  .result-chip.expanded .breakdown { display:flex; }
+  .breakdown-row { display:flex; justify-content:space-between; gap:14px; }
+  .breakdown-row .bd-contrib { color:var(--accent); }
+  .breakdown-total { display:flex; justify-content:space-between; gap:14px; margin-top:2px; padding-top:4px; border-top:1px solid var(--line); color:var(--ink); font-weight:600; }
+
   footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--ink-faint); }
 
   @media (max-width: 640px) {
@@ -281,8 +308,14 @@
 
   <section class="step" id="results">
     <div class="step-head"><h2>Your Tier List</h2></div>
+    <div class="results-summary" id="results-summary"></div>
     <div class="tier-legend" id="tier-legend" style="display:none;"><span class="gre-flag" aria-hidden="true">&times;</span> Requires the GRE</div>
     <div id="tier-list"></div>
+    <p class="step-note" style="margin:14px 0 0;">Click a school to see how its score breaks down.</p>
+    <div class="results-actions">
+      <button class="action-btn" id="copy-link-btn" type="button">Copy link to this list</button>
+      <button class="action-btn" id="download-img-btn" type="button">Download as image</button>
+    </div>
   </section>
 
   <footer>PGR Explorer is an independent tool. Rankings data © Philosophical Gourmet Report; used here for informational, non-commercial analysis with attribution.</footer>
@@ -10089,10 +10122,12 @@ const PGR_DATA = {
     var totalWeight = keys.reduce(function (sum, k) { return sum + (state.weights[k] || 0); }, 0) || 1;
 
     var scores = {};
+    var breakdown = {};
     state.shortlist.forEach(function (id) {
       var total = 0;
+      var parts = [];
       keys.forEach(function (key) {
-        var w = (state.weights[key] || 0) / totalWeight;
+        var wPct = (state.weights[key] || 0) / totalWeight;
         var v = 0;
         if (key === 'prestige') v = prestigeNorm[id];
         else if (key === 'fit') v = fitNorm ? fitNorm[id] : 0;
@@ -10103,11 +10138,17 @@ const PGR_DATA = {
           var factor = state.customFactors.filter(function (f) { return f.id === key; })[0];
           v = factor ? (factor.values[id] !== undefined ? factor.values[id] : 0) : 0;
         }
-        total += w * v;
+        var contribution = wPct * v;
+        total += contribution;
+        if (wPct > 0) {
+          parts.push({ key: key, label: weightLabel(key), value: v, weightPct: wPct, contribution: contribution });
+        }
       });
+      parts.sort(function (a, b) { return b.contribution - a.contribution; });
       scores[id] = total;
+      breakdown[id] = parts;
     });
-    return scores;
+    return { scores: scores, breakdown: breakdown };
   }
 
   function bucketToTiers(scores) {
@@ -10132,9 +10173,39 @@ const PGR_DATA = {
     return !!entry && entry.gre !== null && entry.gre <= 2;
   }
 
+  function activeFactorSummary() {
+    var keys = currentWeightKeys();
+    var total = keys.reduce(function (sum, k) { return sum + (state.weights[k] || 0); }, 0) || 1;
+    var active = keys.filter(function (k) { return (state.weights[k] || 0) > 0; })
+      .sort(function (a, b) { return (state.weights[b] || 0) - (state.weights[a] || 0); })
+      .map(function (k) { return { label: weightLabel(k), pct: Math.round(((state.weights[k] || 0) / total) * 100) }; });
+    var selectedSpecs = Object.keys(state.specialties).filter(function (k) { return state.specialties[k]; });
+    var specNames = (selectedSpecs.length && (state.weights.fit || 0) > 0)
+      ? selectedSpecs.map(function (k) { return PGR_DATA.specialties[k] ? PGR_DATA.specialties[k].name : k; })
+      : null;
+    return { active: active, specNames: specNames };
+  }
+
+  function renderResultsSummary() {
+    var el = document.getElementById('results-summary');
+    var summary = activeFactorSummary();
+    var html = '<div class="summary-factors">' + summary.active.map(function (p) {
+      return '<span class="summary-chip">' + escapeHtml(p.label) + ' ' + p.pct + '%</span>';
+    }).join('') + '</div>';
+    if (summary.specNames) {
+      html += '<div class="summary-specs">Fit computed from: ' + escapeHtml(summary.specNames.join(', ')) + '</div>';
+    }
+    el.innerHTML = html;
+  }
+
+  var lastScores = null, lastBreakdown = null;
+
   function renderResults() {
-    var scores = computeScores();
+    var computed = computeScores();
+    var scores = computed.scores, breakdown = computed.breakdown;
+    lastScores = scores; lastBreakdown = breakdown;
     var tiers = bucketToTiers(scores);
+    renderResultsSummary();
     var tierListEl = document.getElementById('tier-list');
     tierListEl.innerHTML = '';
     var anyGreFlag = false;
@@ -10151,9 +10222,26 @@ const PGR_DATA = {
         if (flagged) anyGreFlag = true;
         var chip = document.createElement('div');
         chip.className = 'result-chip';
-        chip.innerHTML = '<span>' + escapeHtml(s.name) + '</span>' +
+        var head = document.createElement('div');
+        head.className = 'chip-head';
+        head.innerHTML = '<span>' + escapeHtml(s.name) + '</span>' +
           (flagged ? '<span class="gre-flag" title="Requires the GRE">&times;</span>' : '') +
           '<span class="score">' + scores[id].toFixed(2) + '</span>';
+        var bd = document.createElement('div');
+        bd.className = 'breakdown';
+        breakdown[id].forEach(function (p) {
+          var line = document.createElement('div');
+          line.className = 'breakdown-row';
+          line.innerHTML = '<span>' + escapeHtml(p.label) + ' — ' + p.value.toFixed(1) + '/10 @ ' + Math.round(p.weightPct * 100) + '%</span>' +
+            '<span class="bd-contrib">+' + p.contribution.toFixed(2) + '</span>';
+          bd.appendChild(line);
+        });
+        var totalLine = document.createElement('div');
+        totalLine.className = 'breakdown-total';
+        totalLine.innerHTML = '<span>Total</span><span>' + scores[id].toFixed(2) + '</span>';
+        bd.appendChild(totalLine);
+        chip.appendChild(head); chip.appendChild(bd);
+        chip.addEventListener('click', function () { chip.classList.toggle('expanded'); });
         schoolsWrap.appendChild(chip);
       });
       row.appendChild(badge); row.appendChild(schoolsWrap);
@@ -10167,12 +10255,241 @@ const PGR_DATA = {
 
   genBtn.addEventListener('click', renderResults);
 
+  // ---- share code: state <-> URL hash, so a link/code reproduces the whole session ----
+  function serializeState() {
+    return {
+      v: 1,
+      shortlist: state.shortlist,
+      specialties: Object.keys(state.specialties).filter(function (k) { return state.specialties[k]; }),
+      weights: state.weights,
+      customFactors: state.customFactors
+    };
+  }
+
+  function applyState(s) {
+    state.shortlist = Array.isArray(s.shortlist) ? s.shortlist.filter(function (id) { return !!schoolById[id]; }) : [];
+    state.specialties = {};
+    (s.specialties || []).forEach(function (k) { if (PGR_DATA.specialties[k]) state.specialties[k] = true; });
+    state.customFactors = Array.isArray(s.customFactors) ? s.customFactors : [];
+    var maxN = 0;
+    state.customFactors.forEach(function (f) {
+      var m = /^f(\d+)$/.exec(f.id);
+      if (m) maxN = Math.max(maxN, parseInt(m[1], 10));
+    });
+    factorCounter = maxN;
+    state.weights = Object.assign({ prestige: 40, fit: 40, rmf_gre: 0, rmf_funding: 0, rmf_interdisciplinary: 0 }, s.weights || {});
+  }
+
+  function encodeStateToCode(s) {
+    var json = JSON.stringify(s);
+    var b64 = btoa(unescape(encodeURIComponent(json)));
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function decodeCodeToState(code) {
+    try {
+      var b64 = code.replace(/-/g, '+').replace(/_/g, '/');
+      b64 += '='.repeat((4 - b64.length % 4) % 4);
+      var json = decodeURIComponent(escape(atob(b64)));
+      return JSON.parse(json);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function loadFromHash() {
+    var hash = new URLSearchParams(window.location.hash.slice(1));
+    var code = hash.get('c');
+    if (!code) return false;
+    var s = decodeCodeToState(code);
+    if (!s) return false;
+    applyState(s);
+    return true;
+  }
+
+  function flashButton(btn, text) {
+    var original = btn.dataset.originalText || btn.textContent;
+    btn.dataset.originalText = original;
+    btn.textContent = text;
+    setTimeout(function () { btn.textContent = original; }, 1800);
+  }
+
+  document.getElementById('copy-link-btn').addEventListener('click', function () {
+    var btn = this;
+    var code = encodeStateToCode(serializeState());
+    var url = new URL(window.location.href);
+    url.hash = 'c=' + code;
+    window.history.replaceState(null, '', url);
+    navigator.clipboard.writeText(url.toString()).then(function () {
+      flashButton(btn, 'Link copied!');
+    }).catch(function () {
+      flashButton(btn, "Couldn't copy — try again?");
+    });
+  });
+
+  // ---- downloadable image export ----
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function wrapChipList(ctx, items, maxWidth, chipPadX, gapX) {
+    var lines = [];
+    var line = [];
+    var lineW = 0;
+    items.forEach(function (text) {
+      var w = ctx.measureText(text).width + chipPadX * 2;
+      if (lineW + w > maxWidth && line.length) {
+        lines.push(line);
+        line = [];
+        lineW = 0;
+      }
+      line.push({ text: text, w: w });
+      lineW += w + gapX;
+    });
+    if (line.length) lines.push(line);
+    return lines;
+  }
+
+  function exportTierListImage() {
+    if (!lastScores) return;
+    var scores = lastScores;
+    var tiers = bucketToTiers(scores);
+    var summary = activeFactorSummary();
+    var factorTexts = summary.active.map(function (p) { return p.label + ' ' + p.pct + '%'; });
+    if (summary.specNames) factorTexts.push('Fit from: ' + summary.specNames.join(', '));
+
+    var W = 1000, pad = 44, badgeW = 60, chipPadX = 12, chipGapX = 8, chipGapY = 10, chipH = 32, rowGapY = 16;
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    ctx.font = '600 12.5px Arial';
+    var factorLines = wrapChipList(ctx, factorTexts, W - pad * 2, chipPadX, chipGapX);
+
+    var contentW = W - pad * 2 - badgeW - 16;
+    var tierOrder = ['S', 'A', 'B', 'C', 'D', 'F'];
+    var tierColors = { S: '#ff5fa8', A: '#3f6bff', B: '#ff8a3d', C: '#12a67a', D: '#7a5f3a', F: '#e0453f' };
+    ctx.font = '500 13px Arial';
+    var tierLayout = tierOrder.map(function (t) {
+      var ids = tiers[t].slice().sort(function (a, b) { return scores[b] - scores[a]; });
+      var items = ids.map(function (id) { return schoolById[id].name + '  ' + scores[id].toFixed(2); });
+      var lines = items.length ? wrapChipList(ctx, items, contentW, chipPadX, chipGapX) : [];
+      var h = Math.max(badgeW, lines.length ? lines.length * (chipH + chipGapY) - chipGapY : chipH);
+      return { t: t, lines: lines, h: h };
+    });
+
+    var titleH = 68;
+    var factorBlockH = factorLines.length ? factorLines.length * (chipH - 4 + 6) + 20 : 0;
+    var footerH = 40;
+    var H = pad + titleH + factorBlockH + tierLayout.reduce(function (s, tl) { return s + tl.h + rowGapY; }, 0) + footerH + pad;
+
+    canvas.width = W;
+    canvas.height = H;
+
+    ctx.fillStyle = '#12131a';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = 'top';
+
+    var y = pad;
+    ctx.fillStyle = '#a9adbd';
+    ctx.font = '700 12px Arial';
+    ctx.fillText('PGR EXPLORER · BUILD YOUR OWN RANKING', pad, y);
+    y += 20;
+    ctx.fillStyle = '#f2c14e';
+    ctx.font = '800 28px Georgia';
+    ctx.fillText('My Philosophy PhD Tier List', pad, y);
+    y += 40;
+
+    factorLines.forEach(function (line) {
+      var x = pad;
+      line.forEach(function (chip) {
+        ctx.fillStyle = '#3a3320';
+        ctx.strokeStyle = '#6b5a2a';
+        roundRect(ctx, x, y, chip.w, chipH - 4, 3);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#f2c14e';
+        ctx.font = '600 12px Arial';
+        ctx.fillText(chip.text, x + chipPadX, y + 7);
+        x += chip.w + chipGapX;
+      });
+      y += (chipH - 4) + 6;
+    });
+    if (factorLines.length) y += 14;
+
+    ctx.strokeStyle = '#2a2d3a';
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+    y += 20;
+
+    tierLayout.forEach(function (tl) {
+      var rowTop = y;
+      ctx.fillStyle = tierColors[tl.t];
+      roundRect(ctx, pad, rowTop, badgeW, tl.h, 6);
+      ctx.fill();
+      ctx.fillStyle = '#12131a';
+      ctx.font = '800 20px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(tl.t, pad + badgeW / 2, rowTop + tl.h / 2 - 10);
+      ctx.textAlign = 'left';
+
+      if (!tl.lines.length) {
+        ctx.fillStyle = '#6d7182';
+        ctx.font = '400 13px Arial';
+        ctx.fillText('—', pad + badgeW + 16, rowTop + tl.h / 2 - 7);
+      } else {
+        var cy = rowTop + (tl.h - (tl.lines.length * (chipH + chipGapY) - chipGapY)) / 2;
+        tl.lines.forEach(function (line) {
+          var x = pad + badgeW + 16;
+          line.forEach(function (chip) {
+            ctx.fillStyle = '#1f222e';
+            ctx.strokeStyle = '#3d4152';
+            roundRect(ctx, x, cy, chip.w, chipH, 4);
+            ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#eceef4';
+            ctx.font = '500 12.5px Arial';
+            ctx.fillText(chip.text, x + chipPadX, cy + 9);
+            x += chip.w + chipGapX;
+          });
+          cy += chipH + chipGapY;
+        });
+      }
+      y = rowTop + tl.h + rowGapY;
+    });
+
+    ctx.strokeStyle = '#2a2d3a';
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+    y += 16;
+    ctx.fillStyle = '#6d7182';
+    ctx.font = '400 10.5px Arial';
+    ctx.fillText('Rankings data: Philosophical Gourmet Report, 2024-2025 edition. Generated at pgr.dreemachine.com — not affiliated with or endorsed by the PGR.', pad, y);
+
+    canvas.toBlob(function (blob) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pgr-tier-list.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    }, 'image/png');
+  }
+
+  document.getElementById('download-img-btn').addEventListener('click', exportTierListImage);
+
   // ---- init ----
+  var loadedFromLink = loadFromHash();
   renderShortlist();
   renderSpecialtyGroups();
   renderCustomFactors();
   renderWeights();
   updateGenerateBtn();
+  if (loadedFromLink && state.shortlist.length) {
+    renderResults();
+  }
 })();
 </script>
 </body>
