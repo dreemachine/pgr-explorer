@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PGR Explorer — Philosophy PhD Tier List</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Exo:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=Exo:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #12131a;
@@ -15,8 +15,8 @@
     --line: #2a2d3a;
     --line-strong: #3d4152;
     --ink: #eceef4;
-    --ink-soft: #a9adbd;
-    --ink-faint: #6d7182;
+    --ink-soft: #c3c7d6;
+    --ink-faint: #8b90a3;
     --accent: #f2c14e;
     --accent-ink: #14151c;
     --accent-soft: #3a3320;
@@ -26,10 +26,12 @@
     --s-glow: #ff5fa8;
     --s-grad-1: #ffe57a;
     --s-grad-2: #ff4fa3;
+    --s2-grad-1: #ffd479;
+    --s2-grad-2: #c98a1f;
     --a-grad-1: #7fe0ff;
     --a-grad-2: #3f6bff;
-    --b-grad-1: #ffcf5c;
-    --b-grad-2: #ff8a3d;
+    --b-grad-1: #c9a8ff;
+    --b-grad-2: #7c3fd9;
     --c-grad-1: #8ff0c0;
     --c-grad-2: #12a67a;
     --d-grad-1: #8a6a4a;
@@ -38,7 +40,7 @@
     --f-grad-2: #7a1616;
     --font-display: 'Orbitron', 'Segoe UI', sans-serif;
     --font-headline: 'Exo', 'Segoe UI', sans-serif;
-    --font-body: 'Barlow Semi Condensed', 'Segoe UI', -apple-system, sans-serif;
+    --font-body: 'Barlow', 'Segoe UI', -apple-system, sans-serif;
     --font-mono: 'Cascadia Code', 'SF Mono', Consolas, monospace;
   }
   * { box-sizing: border-box; }
@@ -77,6 +79,12 @@
     border-radius:4px; padding:24px 26px; margin-bottom:20px;
   }
   .step-head { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .step-head h2 { flex:1; }
+  .clear-btn {
+    background:none; border:1px solid var(--line-strong); color:var(--ink-faint); font-size:12.5px;
+    padding:6px 12px; cursor:pointer; font-family:var(--font-body); font-weight:600; border-radius:2px; flex-shrink:0;
+  }
+  .clear-btn:hover { border-color:var(--f-grad-1); color:var(--f-grad-1); }
   .step-num {
     font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--accent-ink);
     background:var(--accent); width:26px; height:26px; flex-shrink:0;
@@ -114,10 +122,17 @@
     font-family:var(--font-display); font-size:10.5px; font-weight:700; text-transform:uppercase;
     letter-spacing:0.12em; color:var(--ink-faint); margin-bottom:9px;
   }
+  .browse-sort-row { display:flex; gap:8px; margin-bottom:14px; }
+  .sort-toggle-btn {
+    background:none; border:1px solid var(--line-strong); color:var(--ink-soft); font-size:12.5px;
+    padding:6px 12px; cursor:pointer; font-family:var(--font-body); font-weight:600; border-radius:2px;
+  }
+  .sort-toggle-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .sort-toggle-btn.active { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
   .browse-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:8px; }
   .browse-tile {
     background:var(--panel-raised); border:1px solid var(--line-strong); border-left:2px solid transparent;
-    color:var(--ink-soft); text-align:left; padding:9px 12px; font-size:14px; font-family:var(--font-body);
+    color:var(--ink); text-align:left; padding:9px 12px; font-size:14.5px; font-family:var(--font-body);
     cursor:pointer; transition: border-color .15s ease, background .15s ease, color .15s ease;
   }
   .browse-tile:hover { border-color:var(--accent-line); }
@@ -140,17 +155,32 @@
     background: color-mix(in srgb, var(--group-color, var(--ink-faint)) 11%, var(--panel-raised));
     border:1px solid color-mix(in srgb, var(--group-color, var(--line-strong)) 32%, var(--line-strong));
     color:var(--ink-soft);
+    display:flex; align-items:center; gap:8px;
     padding:7px 14px; font-size:14px; font-weight:500; cursor:pointer; user-select:none;
     clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
   }
   .spec-chip.on { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+  .spec-stars { display:none; gap:3px; }
+  .spec-chip.on .spec-stars { display:flex; }
+  .spec-star {
+    width:12px; height:12px; padding:0; border-radius:50%; cursor:pointer;
+    background:transparent; border:1px solid color-mix(in srgb, var(--group-color, var(--ink-faint)) 60%, var(--line-strong));
+  }
+  .spec-star.filled { background:var(--group-color, var(--accent)); border-color:var(--group-color, var(--accent)); }
 
   .custom-factor { border:1px solid var(--line); border-left:3px solid var(--steel); padding:16px 18px; margin-bottom:12px; background:var(--panel-raised); }
-  .custom-factor-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:12px; }
+  .custom-factor-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; gap:12px; }
   .custom-factor-head input[type="text"] { max-width:300px; font-weight:600; }
+  .select-all-btn {
+    background:none; border:1px solid var(--line-strong); color:var(--ink-soft); font-size:12.5px;
+    padding:6px 12px; cursor:pointer; font-family:var(--font-body); font-weight:500; flex-shrink:0; border-radius:2px;
+  }
+  .select-all-btn:hover { border-color:var(--accent); color:var(--accent); }
   .remove-factor { background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:13.5px; font-family:var(--font-body); flex-shrink:0; }
   .remove-factor:hover { color:var(--f-grad-1); }
-  .factor-school-row { display:grid; grid-template-columns: 1fr 220px 44px; align-items:center; gap:12px; padding:7px 0; font-size:14.5px; }
+  .factor-hint { font-size:12.5px; color:var(--ink-faint); margin:0 0 10px; }
+  .factor-school-row { display:grid; grid-template-columns: 22px 1fr 220px 44px; align-items:center; gap:12px; padding:7px 0; font-size:14.5px; }
+  .factor-school-row input[type="checkbox"] { margin:0; accent-color:var(--steel); cursor:pointer; }
   .factor-school-row input[type="range"] { width:100%; accent-color:var(--steel); }
   .factor-val { font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); text-align:right; }
   button.add-btn {
@@ -163,6 +193,14 @@
   .weight-row label { font-size:15px; font-weight:500; }
   .weight-row input[type="range"] { width:100%; accent-color:var(--accent); }
   .weight-pct { font-family:var(--font-mono); font-size:13.5px; color:var(--accent); text-align:right; }
+
+  .gre-bonus-control {
+    display:grid; grid-template-columns: 210px 1fr 58px; align-items:center; gap:16px;
+    padding:14px 0 10px; margin-top:8px; border-top:1px solid var(--line);
+  }
+  .gre-bonus-control label { font-size:15px; font-weight:500; }
+  .gre-bonus-control input[type="range"] { width:100%; accent-color:var(--steel); }
+  .gre-bonus-val { font-family:var(--font-mono); font-size:13.5px; color:var(--steel); text-align:right; }
 
   button.generate-btn {
     display:block; width:100%; margin-top:8px;
@@ -182,17 +220,21 @@
     font-family:var(--font-display); font-size:24px; font-weight:800; color:var(--panel-sunken);
     clip-path: polygon(50% 0%, 100% 22%, 100% 78%, 50% 100%, 0% 78%, 0% 22%);
   }
-  .tier-badge.S { background: linear-gradient(155deg, var(--s-grad-1) 0%, #ff8ecb 45%, var(--s-grad-2) 100%); box-shadow: 0 0 26px rgba(255,95,168,0.55), 0 0 10px rgba(255,229,122,0.4); }
+  .tier-badge.Splus { background: linear-gradient(155deg, var(--s-grad-1) 0%, #ff8ecb 45%, var(--s-grad-2) 100%); box-shadow: 0 0 26px rgba(255,95,168,0.55), 0 0 10px rgba(255,229,122,0.4); }
+  .tier-badge.S { background: linear-gradient(155deg, var(--s2-grad-1), var(--s2-grad-2)); box-shadow: 0 0 16px rgba(201,138,31,0.4); }
   .tier-badge.A { background: linear-gradient(155deg, var(--a-grad-1), var(--a-grad-2)); box-shadow: 0 0 20px rgba(63,107,255,0.45); }
-  .tier-badge.B { background: linear-gradient(155deg, var(--b-grad-1), var(--b-grad-2)); box-shadow: 0 0 18px rgba(255,138,61,0.4); }
+  .tier-badge.B { background: linear-gradient(155deg, var(--b-grad-1), var(--b-grad-2)); box-shadow: 0 0 18px rgba(124,63,217,0.4); }
   .tier-badge.C { background: linear-gradient(155deg, var(--c-grad-1), var(--c-grad-2)); box-shadow: 0 0 16px rgba(18,166,122,0.4); }
   .tier-badge.D { background: linear-gradient(155deg, var(--d-grad-1), var(--d-grad-2)); box-shadow: 0 0 12px rgba(56,42,28,0.5); }
-  .tier-badge.F { background: linear-gradient(155deg, var(--f-grad-1), var(--f-grad-2)); color:var(--ink); box-shadow: 0 0 18px rgba(255,92,92,0.45); }
   .tier-schools {
     flex:1; display:flex; flex-wrap:wrap; align-content:center; gap:9px; padding:12px 6px;
     border-bottom:1px solid var(--line); background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
   }
-  .tier-schools:empty::after { content:"—"; color:var(--ink-faint); font-size:13.5px; }
+  .tier-empty { color:var(--ink-faint); font-size:13.5px; }
+  .tier-label {
+    flex-basis:100%; font-family:var(--font-display); font-size:10px; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 2px 2px;
+  }
   .result-chip {
     background:var(--panel-raised); border:1px solid var(--line-strong); padding:9px 16px; font-size:15px;
     display:flex; align-items:baseline; gap:9px;
@@ -200,9 +242,10 @@
   }
   .result-chip .score { font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
   .gre-flag {
-    display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
-    border-radius:50%; background:var(--f-grad-1); color:var(--panel-sunken);
-    font-family:var(--font-display); font-size:11px; font-weight:700; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:1px 6px; border-radius:3px; border:1px solid var(--line-strong);
+    background:var(--panel-sunken); color:var(--ink-faint);
+    font-family:var(--font-mono); font-size:10px; font-weight:600; letter-spacing:0.02em; flex-shrink:0;
   }
   .tier-legend {
     display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--ink-soft);
@@ -249,11 +292,19 @@
     .weight-row label { grid-area:label; }
     .weight-row .weight-pct { grid-area:pct; }
     .weight-row input[type="range"] { grid-area:slider; }
+    .gre-bonus-control {
+      grid-template-columns: 1fr auto; grid-template-areas: "label pct" "slider slider";
+      row-gap:6px;
+    }
+    .gre-bonus-control label { grid-area:label; }
+    .gre-bonus-control .gre-bonus-val { grid-area:pct; }
+    .gre-bonus-control input[type="range"] { grid-area:slider; }
     .factor-school-row {
-      grid-template-columns: 1fr auto; grid-template-areas: "label val" "slider slider";
+      grid-template-columns: 22px 1fr auto; grid-template-areas: "chk label val" "slider slider slider";
       row-gap:6px; padding:10px 0;
     }
-    .factor-school-row span:first-child { grid-area:label; }
+    .factor-school-row input[type="checkbox"] { grid-area:chk; }
+    .factor-school-row .factor-label { grid-area:label; }
     .factor-school-row .factor-val { grid-area:val; }
     .factor-school-row input[type="range"] { grid-area:slider; }
     .custom-factor-head { flex-wrap:wrap; }
@@ -271,11 +322,11 @@
     <div class="eyebrow">PGR EXPLORER · BUILD YOUR OWN RANKING</div>
     <h1><span class="h1-line1">Philosophy PhD</span><span class="h1-line2">Tier List</span></h1>
     <p class="subtitle">Pick programs, pick the specialties that matter to you, weight what you actually care about — get a tier list back, not just a table.</p>
-    <p class="cite">Specialty &amp; overall rankings data: Philosophical Gourmet Report, 2024-2025 edition (philosophicalgourmet.com). Not affiliated with or endorsed by the PGR.</p>
+    <p class="cite">The Philosophical Gourmet Report ("the Leiter Report") surveys philosophy faculty across the English-speaking world, who rate PhD programs 0–5 on faculty strength — overall and within 35 specialty areas. This tool uses the 2024–2025 edition (philosophicalgourmet.com) as its source data, and layers on three independently researched factors (GRE friction, funding certainty, interdisciplinary strength — see Step 3) that the PGR itself doesn't track. Not affiliated with or endorsed by the PGR; report data errors to the PGR directly, tool bugs to this project.</p>
   </header>
 
   <section class="step">
-    <div class="step-head"><span class="step-num">1</span><h2>Build your shortlist</h2></div>
+    <div class="step-head"><span class="step-num">1</span><h2>Build your shortlist</h2><button class="clear-btn" id="clear-shortlist-btn" type="button">Clear</button></div>
     <p class="step-note">Search and add the programs you're actually considering.</p>
     <input type="search" id="school-search" placeholder="Search 90 ranked programs (US, UK, Canada, Australasia)…" autocomplete="off">
     <div class="school-search-results" id="school-results"></div>
@@ -286,20 +337,22 @@
   </section>
 
   <section class="step">
-    <div class="step-head"><span class="step-num">2</span><h2>Pick the specialties that matter to you</h2></div>
-    <p class="step-note">Your Fit score is computed only from the specialties you select here — real 2024-2025 PGR specialty rankings, not a guess.</p>
+    <div class="step-head"><span class="step-num">2</span><h2>Pick the specialties that matter to you</h2><button class="clear-btn" id="clear-specialties-btn" type="button">Clear</button></div>
+    <p class="step-note">Your Fit score is computed only from the specialties you select here — real 2024-2025 PGR specialty rankings, not a guess. Click a specialty to add it, then click the dots to rate how much it matters to you, 1–5 — Fit weights higher-rated specialties more heavily instead of averaging everything equally.</p>
     <div id="specialty-groups"></div>
   </section>
 
   <section class="step">
-    <div class="step-head"><span class="step-num">3</span><h2>Weight it</h2></div>
-    <p class="step-note">Slide to taste. Includes GRE Friction, Funding Certainty, and Interdisciplinary Strength — pre-researched across all 90 programs, no per-school scoring needed. Don't care about one? Leave it at 0, same as leaving it out. Weights auto-normalize to 100% — the numbers just show relative pull. Some schools didn't turn up public data for a given factor — those are treated as neutral, not penalized.</p>
+    <div class="step-head"><span class="step-num">3</span><h2>Weight it</h2><button class="clear-btn" id="clear-weights-btn" type="button">Reset</button></div>
+    <p class="step-note">Slide to taste. Base factors include: Funding Certainty and Interdisciplinary Strength. This has been pre-researched across all 90 programs (but as always, double check if it's important, programs can change!). Don't care about a factor? Slide to 0, and it gets weighted out. Weights auto-normalize to 100% — the numbers/bars just show relative pull; raising one weight doesn't shrink the others' underlying values, it just changes how much each counts toward your total.</p>
+    <p class="step-note"><strong>A few notes:</strong> If most of your selected schools are in the top 10-20, I wouldn't weigh prestige too highly, because it will already be biased in that direction.</p>
     <div id="weight-rows"></div>
+    <div id="gre-bonus-row"></div>
   </section>
 
   <section class="step">
-    <div class="step-head"><span class="step-num">4</span><h2>Add your own factors (optional)</h2></div>
-    <p class="step-note">For anything personal that no public dataset could ever cover — like a letter-writer tie (does one of your actual recommenders have a real connection to this program?). That's specific to you, not something we could pre-research for everyone, so add it here and self-report a 0–10 per shortlisted school. Same goes for vibes, or anything else only you would know. It'll show up above in Weight it once added.</p>
+    <div class="step-head"><span class="step-num">4</span><h2>Add your own factors (optional)</h2><button class="clear-btn" id="clear-factors-btn" type="button">Clear</button></div>
+    <p class="step-note">Add your own weighting. Examples: do you have a letter writer with ties to a particular school? Have you heard excellent things about a particular program? Use the custom factor builder to add your own properties to the tier-list. Once you add it here, it will show up above.</p>
     <div id="custom-factors"></div>
     <button class="add-btn" id="add-factor-btn" type="button">+ Add a factor</button>
   </section>
@@ -308,8 +361,9 @@
 
   <section class="step" id="results">
     <div class="step-head"><h2>Your Tier List</h2></div>
+    <p class="step-note" style="margin:2px 0 14px;">Tiers are relative to this shortlist and your selected weighting, not an absolute judgment — a program in Lower Priority or Reconsider isn't objectively weak, it's lower-priority relative to the other excellent programs on this particular shortlist, given your selected preferences and weighting.</p>
     <div class="results-summary" id="results-summary"></div>
-    <div class="tier-legend" id="tier-legend" style="display:none;"><span class="gre-flag" aria-hidden="true">&times;</span> Requires the GRE</div>
+    <div class="tier-legend" id="tier-legend" style="display:none;"><span class="gre-flag" aria-hidden="true">GRE</span> Requires the GRE</div>
     <div id="tier-list"></div>
     <p class="step-note" style="margin:14px 0 0;">Click a school to see how its score breaks down.</p>
     <div class="results-actions">
@@ -9775,9 +9829,17 @@ const PGR_DATA = {
     shortlist: [],       // array of school ids
     specialties: {},     // key -> bool
     customFactors: [],   // [{id, name, values: {schoolId: number}}]
-    // Ready-made factors (rmf_gre, rmf_funding, rmf_interdisciplinary) always have a weight row,
+    // Ready-made factors (rmf_funding, rmf_interdisciplinary) always have a weight row,
     // starting at 0 so they're inert until the user raises them - no separate on/off toggle needed.
-    weights: { prestige: 40, fit: 40, rmf_gre: 0, rmf_funding: 0, rmf_interdisciplinary: 0 }
+    // GRE is handled separately (greBonus below) - it's a binary requirement, not a blended
+    // factor, so it doesn't belong in the normalized weight pool (per dree, 2026-08-25).
+    weights: { prestige: 40, fit: 40, rmf_funding: 0, rmf_interdisciplinary: 0 },
+    greBonus: 1,
+    // Opposite preference from greBonus, for someone who wants to submit a GRE score and
+    // have it count in their favor - full value at schools that require it, half at
+    // schools that merely accept it, nothing where it wouldn't register at all (per dree,
+    // 2026-08-26). Off by default since most people want one or the other, not both.
+    greSubmitBonus: 0
   };
 
   var schoolById = {};
@@ -9786,8 +9848,13 @@ const PGR_DATA = {
   // ---- overall (prestige) + region lookup: institution name -> mean / region ----
   var overallByName = {};
   var regionByName = {};
+  var rankByName = {};
+  var overallCIByName = {};
   ["US","UK","Canada","Australasia"].forEach(function (region) {
-    PGR_DATA.overall[region].forEach(function (row) { overallByName[row.institution] = row.mean; regionByName[row.institution] = region; });
+    PGR_DATA.overall[region].forEach(function (row) {
+      overallByName[row.institution] = row.mean; regionByName[row.institution] = region; rankByName[row.institution] = row.rank;
+      overallCIByName[row.institution] = { upperCI: row.upperCI, lowerCI: row.lowerCI };
+    });
   });
 
   function slug(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
@@ -9846,13 +9913,34 @@ const PGR_DATA = {
   var browsePanel = document.getElementById('browse-panel');
   var REGION_ORDER = ["US","UK","Canada","Australasia"];
   var REGION_LABEL = { US: "United States", UK: "United Kingdom", Canada: "Canada", Australasia: "Australasia" };
+  var browseSortMode = 'alpha';
+
+  function sortSchools(list) {
+    if (browseSortMode !== 'rank') return list.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    return list.sort(function (a, b) {
+      var ra = rankByName[a.name], rb = rankByName[b.name];
+      if (ra == null && rb == null) return a.name.localeCompare(b.name);
+      if (ra == null) return 1;
+      if (rb == null) return -1;
+      return ra - rb;
+    });
+  }
 
   function renderBrowsePanel() {
     browsePanel.innerHTML = '';
+    var sortRow = document.createElement('div');
+    sortRow.className = 'browse-sort-row';
+    [['alpha', 'Sort: A–Z'], ['rank', 'Sort: Rank']].forEach(function (pair) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sort-toggle-btn' + (browseSortMode === pair[0] ? ' active' : '');
+      btn.textContent = pair[1];
+      btn.addEventListener('click', function () { browseSortMode = pair[0]; renderBrowsePanel(); });
+      sortRow.appendChild(btn);
+    });
+    browsePanel.appendChild(sortRow);
     REGION_ORDER.forEach(function (region) {
-      var schoolsInRegion = PGR_DATA.schools
-        .filter(function (s) { return regionByName[s.name] === region; })
-        .sort(function (a, b) { return a.name.localeCompare(b.name); });
+      var schoolsInRegion = sortSchools(PGR_DATA.schools.filter(function (s) { return regionByName[s.name] === region; }));
       if (!schoolsInRegion.length) return;
 
       var group = document.createElement('div');
@@ -9923,12 +10011,40 @@ const PGR_DATA = {
       group.keys.forEach(function (key) {
         var cat = PGR_DATA.specialties[key];
         if (!cat) return;
+        var importance = state.specialties[key] || 0;
         var chip = document.createElement('div');
-        chip.className = 'spec-chip' + (state.specialties[key] ? ' on' : '');
-        chip.textContent = cat.name;
+        chip.className = 'spec-chip' + (importance > 0 ? ' on' : '');
+
+        var nameEl = document.createElement('span');
+        nameEl.className = 'spec-chip-name';
+        nameEl.textContent = cat.name;
+        chip.appendChild(nameEl);
+
+        // Importance rating (1-5), only meaningful once a specialty is selected - lets
+        // Fit weight specialties you care about more heavily instead of averaging every
+        // selected one equally (per dree, 2026-08-26).
+        var starsEl = document.createElement('span');
+        starsEl.className = 'spec-stars';
+        for (var v = 1; v <= 5; v++) {
+          (function (val) {
+            var star = document.createElement('button');
+            star.type = 'button';
+            star.className = 'spec-star' + (importance >= val ? ' filled' : '');
+            star.title = 'Importance ' + val + '/5';
+            star.addEventListener('click', function (e) {
+              e.stopPropagation();
+              state.specialties[key] = val;
+              renderSpecialtyGroups();
+            });
+            starsEl.appendChild(star);
+          })(v);
+        }
+        chip.appendChild(starsEl);
+
         chip.addEventListener('click', function () {
-          state.specialties[key] = !state.specialties[key];
-          chip.classList.toggle('on', !!state.specialties[key]);
+          if (state.specialties[key]) { delete state.specialties[key]; }
+          else { state.specialties[key] = 3; }
+          renderSpecialtyGroups();
         });
         chips.appendChild(chip);
       });
@@ -9942,7 +10058,7 @@ const PGR_DATA = {
   var factorCounter = 0;
   document.getElementById('add-factor-btn').addEventListener('click', function () {
     factorCounter += 1;
-    state.customFactors.push({ id: 'f' + factorCounter, name: '', values: {} });
+    state.customFactors.push({ id: 'f' + factorCounter, name: '', values: {}, linked: {} });
     state.weights['f' + factorCounter] = 20;
     renderCustomFactors();
     renderWeights();
@@ -9951,6 +10067,7 @@ const PGR_DATA = {
   function renderCustomFactors() {
     customFactorsEl.innerHTML = '';
     state.customFactors.forEach(function (factor) {
+      if (!factor.linked) factor.linked = {};
       var box = document.createElement('div');
       box.className = 'custom-factor';
 
@@ -9959,6 +10076,14 @@ const PGR_DATA = {
       var nameInput = document.createElement('input');
       nameInput.type = 'text'; nameInput.placeholder = 'Factor name (e.g. GRE friction)'; nameInput.value = factor.name;
       nameInput.addEventListener('input', function () { factor.name = nameInput.value; renderWeights(); });
+      var allLinked = state.shortlist.length > 0 && state.shortlist.every(function (id) { return !!factor.linked[id]; });
+      var selectAllBtn = document.createElement('button');
+      selectAllBtn.className = 'select-all-btn'; selectAllBtn.type = 'button';
+      selectAllBtn.textContent = allLinked ? 'Deselect all' : 'Select all';
+      selectAllBtn.addEventListener('click', function () {
+        if (allLinked) { factor.linked = {}; } else { state.shortlist.forEach(function (id) { factor.linked[id] = true; }); }
+        renderCustomFactors();
+      });
       var removeBtn = document.createElement('button');
       removeBtn.className = 'remove-factor'; removeBtn.type = 'button'; removeBtn.textContent = 'Remove';
       removeBtn.addEventListener('click', function () {
@@ -9966,26 +10091,60 @@ const PGR_DATA = {
         delete state.weights[factor.id];
         renderCustomFactors(); renderWeights();
       });
-      head.appendChild(nameInput); head.appendChild(removeBtn);
+      head.appendChild(nameInput); head.appendChild(selectAllBtn); head.appendChild(removeBtn);
       box.appendChild(head);
 
       if (!state.shortlist.length) {
         var note = document.createElement('div');
         note.className = 'empty-note'; note.textContent = 'Add programs to your shortlist first.';
         box.appendChild(note);
+      } else {
+        var hint = document.createElement('p');
+        hint.className = 'factor-hint';
+        hint.textContent = 'Check two or more schools to move their sliders together — handy for giving 1-2 favorites a boost, or docking a couple without touching the rest.';
+        box.appendChild(hint);
       }
+
+      var rowRefs = [];
       state.shortlist.forEach(function (id) {
         var s = schoolById[id];
         var row = document.createElement('div');
         row.className = 'factor-school-row';
-        var label = document.createElement('span'); label.textContent = s.name;
+
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox'; checkbox.checked = !!factor.linked[id];
+        checkbox.title = 'Link this school\'s slider to other checked schools';
+        checkbox.addEventListener('change', function () {
+          if (checkbox.checked) factor.linked[id] = true; else delete factor.linked[id];
+          renderCustomFactors();
+        });
+
+        var label = document.createElement('span'); label.className = 'factor-label'; label.textContent = s.name;
+
         var slider = document.createElement('input');
         slider.type = 'range'; slider.min = '0'; slider.max = '10'; slider.step = '0.5';
-        slider.value = factor.values[id] !== undefined ? factor.values[id] : 5;
-        if (factor.values[id] === undefined) factor.values[id] = 5;
+        if (factor.values[id] === undefined) factor.values[id] = 0;
+        slider.value = factor.values[id];
         var valEl = document.createElement('span'); valEl.className = 'factor-val'; valEl.textContent = parseFloat(slider.value).toFixed(1);
-        slider.addEventListener('input', function () { factor.values[id] = parseFloat(slider.value); valEl.textContent = factor.values[id].toFixed(1); });
-        row.appendChild(label); row.appendChild(slider); row.appendChild(valEl);
+
+        rowRefs.push({ id: id, slider: slider, valEl: valEl });
+
+        slider.addEventListener('input', function () {
+          var v = parseFloat(slider.value);
+          factor.values[id] = v;
+          valEl.textContent = v.toFixed(1);
+          if (factor.linked[id]) {
+            rowRefs.forEach(function (ref) {
+              if (ref.id !== id && factor.linked[ref.id]) {
+                factor.values[ref.id] = v;
+                ref.slider.value = v;
+                ref.valEl.textContent = v.toFixed(1);
+              }
+            });
+          }
+        });
+
+        row.appendChild(checkbox); row.appendChild(label); row.appendChild(slider); row.appendChild(valEl);
         box.appendChild(row);
       });
 
@@ -9997,7 +10156,10 @@ const PGR_DATA = {
   var weightRowsEl = document.getElementById('weight-rows');
   function activeReadyMadeKeys() {
     // Always present in Weight it (default weight 0) - no separate on/off toggle; 0 weight IS off.
-    return PGR_DATA.readyMadeFactors.definitions.map(function (d) { return 'rmf_' + d.key; });
+    // GRE excluded here - it's the standalone bonus control, not a blended weight (see greBonus).
+    return PGR_DATA.readyMadeFactors.definitions
+      .filter(function (d) { return d.key !== 'gre'; })
+      .map(function (d) { return 'rmf_' + d.key; });
   }
   function currentWeightKeys() {
     return ['prestige','fit'].concat(activeReadyMadeKeys()).concat(state.customFactors.map(function (f) { return f.id; }));
@@ -10044,6 +10206,43 @@ const PGR_DATA = {
     });
   }
 
+  // ---- GRE bonus: standalone, additive, binary - not part of the weighted blend above ----
+  var greBonusEl = document.getElementById('gre-bonus-row');
+  function buildBonusSlider(container, labelText, getVal, setVal) {
+    var row = document.createElement('div');
+    row.className = 'gre-bonus-control';
+    var label = document.createElement('label');
+    label.textContent = labelText;
+    var slider = document.createElement('input');
+    slider.type = 'range'; slider.min = '0'; slider.max = '5'; slider.step = '0.5';
+    slider.value = getVal();
+    var valEl = document.createElement('span');
+    valEl.className = 'gre-bonus-val';
+    valEl.textContent = '+' + getVal();
+    slider.addEventListener('input', function () {
+      var v = parseFloat(slider.value);
+      setVal(v);
+      valEl.textContent = '+' + v;
+    });
+    row.appendChild(label); row.appendChild(slider); row.appendChild(valEl);
+    container.appendChild(row);
+  }
+
+  function renderGreBonus() {
+    greBonusEl.innerHTML = '';
+    buildBonusSlider(greBonusEl, 'No-GRE bonus', function () { return state.greBonus; }, function (v) { state.greBonus = v; });
+    var hint1 = document.createElement('p');
+    hint1.className = 'factor-hint';
+    hint1.textContent = "Flat points added on top if a school doesn't require the GRE at all. Schools that require it get zero bonus, no partial credit either way - it's a real requirement, not a matter of degree, so it isn't part of the weighted blend above.";
+    greBonusEl.appendChild(hint1);
+
+    buildBonusSlider(greBonusEl, 'GRE submission bonus', function () { return state.greSubmitBonus; }, function (v) { state.greSubmitBonus = v; });
+    var hint2 = document.createElement('p');
+    hint2.className = 'factor-hint';
+    hint2.textContent = "For the opposite case - you want to submit a GRE score and have it count in your favor. Full value at schools that require the GRE, half that at schools that merely accept it, nothing at schools that don't look at it. Usually you'd set this OR the No-GRE bonus above, not both.";
+    greBonusEl.appendChild(hint2);
+  }
+
   // ---- generate button state ----
   var genBtn = document.getElementById('generate-btn');
   function updateGenerateBtn() {
@@ -10056,15 +10255,91 @@ const PGR_DATA = {
     }
   }
 
+  // ---- per-section clear buttons ----
+  function hideResults() {
+    document.getElementById('results').style.display = 'none';
+  }
+
+  document.getElementById('clear-shortlist-btn').addEventListener('click', function () {
+    state.shortlist.forEach(function (id) {
+      state.customFactors.forEach(function (f) { delete f.values[id]; delete f.linked[id]; });
+    });
+    state.shortlist = [];
+    renderShortlist();
+    renderCustomFactors();
+    updateGenerateBtn();
+    renderSearchResults(searchInput.value);
+    if (browsePanel.style.display !== 'none') renderBrowsePanel();
+    hideResults();
+  });
+
+  document.getElementById('clear-specialties-btn').addEventListener('click', function () {
+    state.specialties = {};
+    renderSpecialtyGroups();
+    hideResults();
+  });
+
+  document.getElementById('clear-weights-btn').addEventListener('click', function () {
+    state.weights.prestige = 40; state.weights.fit = 40;
+    state.weights.rmf_funding = 0; state.weights.rmf_interdisciplinary = 0;
+    state.greBonus = 1;
+    state.greSubmitBonus = 0;
+    renderWeights();
+    renderGreBonus();
+    hideResults();
+  });
+
+  document.getElementById('clear-factors-btn').addEventListener('click', function () {
+    state.customFactors.forEach(function (f) { delete state.weights[f.id]; });
+    state.customFactors = [];
+    renderCustomFactors();
+    renderWeights();
+    hideResults();
+  });
+
   // ---- scoring ----
   function normalize(values) {
     // values: {id: number}. returns {id: 0-10 scaled}, min->0, max->10. flat input -> all 10.
+    // If the raw spread across the shortlist is trivially small - within NORMALIZE_EPSILON
+    // on the PGR's own mean scale (roughly 0-5) - treat it as a tie rather than stretching
+    // what's likely just survey noise into an artificial, dramatic-looking 0-10 gap
+    // (flagged by Codex review, 2026-08-25). This is the fallback used for Fit, since
+    // specialty rankings don't carry published confidence intervals - see normalizeWithCI
+    // below for Prestige, which does have real CI data and uses that instead of a guess.
+    var NORMALIZE_EPSILON = 0.15;
     var ids = Object.keys(values);
     var nums = ids.map(function (id) { return values[id]; });
     var min = Math.min.apply(null, nums), max = Math.max.apply(null, nums);
     var out = {};
+    var tie = (max - min) < NORMALIZE_EPSILON;
     ids.forEach(function (id) {
-      out[id] = (max === min) ? 10 : (10 * (values[id] - min) / (max - min));
+      out[id] = tie ? 10 : (10 * (values[id] - min) / (max - min));
+    });
+    return out;
+  }
+
+  function normalizeWithCI(values, ciById) {
+    // Same shape as normalize(), but for Prestige specifically, which has real published
+    // confidence intervals per school (per dree, 2026-08-26 - supersedes the flat-epsilon
+    // guess for this factor). If the highest- and lowest-rated schools' own confidence
+    // intervals overlap, the shortlist is treated as tied because the available data
+    // doesn't distinguish them reliably - not a claim that the gap IS noise, just that
+    // PGR's own published uncertainty can't rule that out (per Codex review, 2026-08-26).
+    // Scope note: this only checks the two extremes. It doesn't catch every overlapping
+    // pair in between when the extremes themselves don't overlap - a real simplicity
+    // tradeoff, not a claim that all statistical uncertainty here is accounted for.
+    var ids = Object.keys(values);
+    var nums = ids.map(function (id) { return values[id]; });
+    var min = Math.min.apply(null, nums), max = Math.max.apply(null, nums);
+    var maxId = ids.filter(function (id) { return values[id] === max; })[0];
+    var minId = ids.filter(function (id) { return values[id] === min; })[0];
+    var maxCI = ciById[maxId], minCI = ciById[minId];
+    var ciOverlap = maxCI && minCI && maxCI.lowerCI !== undefined && minCI.upperCI !== undefined
+      && maxCI.lowerCI <= minCI.upperCI;
+    var tie = (max === min) || ciOverlap;
+    var out = {};
+    ids.forEach(function (id) {
+      out[id] = tie ? 10 : (10 * (values[id] - min) / (max - min));
     });
     return out;
   }
@@ -10083,29 +10358,56 @@ const PGR_DATA = {
   function computeScores() {
     var selectedSpecs = Object.keys(state.specialties).filter(function (k) { return state.specialties[k]; });
 
-    var prestigeRaw = {}, fitRaw = {};
+    var prestigeRaw = {}, prestigeCI = {}, fitRaw = {}, fitMissing = {};
     state.shortlist.forEach(function (id) {
       var s = schoolById[id];
       prestigeRaw[id] = overallByName[s.name] !== undefined ? overallByName[s.name] : 0;
+      prestigeCI[id] = overallCIByName[s.name] || {};
+      fitMissing[id] = [];
       if (selectedSpecs.length) {
-        var sum = 0, count = 0;
+        // Weighted by each specialty's 1-5 importance rating, not a flat average - a
+        // specialty rated 5 pulls the Fit score much harder than one rated 1 (per dree,
+        // 2026-08-26). A school with no ranking at all in a specialty you selected is
+        // penalized as a 0 there, not dropped from the average - the weight still counts
+        // toward the total even though there's nothing to add to the sum (per dree,
+        // 2026-08-27: silently excluding it let unranked schools look better than a
+        // school that's actually ranked with a mediocre score). Exception: at importance
+        // 1 (barely matters), a missing ranking is just noted, not penalized - the same
+        // "drop it" behavior as before, since tanking a school's Fit over something you
+        // rated as nearly irrelevant would be a worse failure mode (per dree, 2026-08-27).
+        var weightedSum = 0, weightTotal = 0;
         selectedSpecs.forEach(function (key) {
+          var w = state.specialties[key] || 1;
           var m = tierMeanFor(s.name, key);
-          if (m !== null) { sum += m; count += 1; }
+          var name = PGR_DATA.specialties[key] ? PGR_DATA.specialties[key].name : key;
+          if (m !== null) {
+            weightedSum += m * w;
+            weightTotal += w;
+          } else if (w <= 1) {
+            fitMissing[id].push({ name: name, penalized: false });
+          } else {
+            fitMissing[id].push({ name: name, penalized: true });
+            weightTotal += w;
+          }
         });
-        fitRaw[id] = count ? (sum / count) : 0;
+        fitRaw[id] = weightTotal ? (weightedSum / weightTotal) : 0;
       } else {
         fitRaw[id] = 0;
       }
     });
 
-    var prestigeNorm = normalize(prestigeRaw);
+    var prestigeNorm = normalizeWithCI(prestigeRaw, prestigeCI);
     var fitNorm = selectedSpecs.length ? normalize(fitRaw) : null;
 
-    // Ready-made factors: normalize only across schools with real (non-null) researched data,
-    // so one "not found" school doesn't skew everyone else's min/max. A school missing a given
-    // factor's data gets a neutral mid-scale value there rather than being penalized or boosted.
-    var rmfNorm = {};
+    // Ready-made factors are already pre-researched on a fixed, absolute 0-10 scale
+    // (see ready_made_factors.mjs) - unlike Prestige/Fit, which are raw PGR means and
+    // genuinely need min-max normalizing to land on a comparable 0-10 scale. Use the
+    // researched value as-is here, NOT run through normalize() - otherwise the same
+    // school's GRE/funding/interdisciplinary score would shift depending on who else
+    // happens to be in the shortlist, which isn't what an absolute rubric means (per
+    // dree, 2026-08-25). A school missing a given factor's data gets a neutral
+    // mid-scale value rather than being penalized or boosted.
+    var rmfRaw = {};
     activeReadyMadeKeys().forEach(function (key) {
       var rmfKey = key.slice(4);
       var raw = {};
@@ -10115,7 +10417,7 @@ const PGR_DATA = {
         var v = entry ? entry[rmfKey] : null;
         if (v !== null && v !== undefined) raw[id] = v;
       });
-      rmfNorm[key] = Object.keys(raw).length ? normalize(raw) : {};
+      rmfRaw[key] = raw;
     });
 
     var keys = currentWeightKeys();
@@ -10132,7 +10434,7 @@ const PGR_DATA = {
         if (key === 'prestige') v = prestigeNorm[id];
         else if (key === 'fit') v = fitNorm ? fitNorm[id] : 0;
         else if (key.indexOf('rmf_') === 0) {
-          v = (rmfNorm[key] && rmfNorm[key][id] !== undefined) ? rmfNorm[key][id] : 5;
+          v = (rmfRaw[key] && rmfRaw[key][id] !== undefined) ? rmfRaw[key][id] : 5;
         }
         else {
           var factor = state.customFactors.filter(function (f) { return f.id === key; })[0];
@@ -10141,9 +10443,34 @@ const PGR_DATA = {
         var contribution = wPct * v;
         total += contribution;
         if (wPct > 0) {
-          parts.push({ key: key, label: weightLabel(key), value: v, weightPct: wPct, contribution: contribution });
+          var label = weightLabel(key);
+          if (key === 'fit' && fitMissing[id].length) {
+            var penalized = fitMissing[id].filter(function (x) { return x.penalized; }).map(function (x) { return x.name; });
+            var noted = fitMissing[id].filter(function (x) { return !x.penalized; }).map(function (x) { return x.name; });
+            var notes = [];
+            if (penalized.length) notes.push('not ranked in ' + penalized.join(', ') + ' - scored as 0 there');
+            if (noted.length) notes.push('not ranked in ' + noted.join(', ') + ' - not penalized, rated 1/5 importance');
+            label += ' (' + notes.join('; ') + ')';
+          }
+          parts.push({ key: key, label: label, value: v, weightPct: wPct, contribution: contribution });
         }
       });
+      // GRE bonuses are flat and additive, not part of the weighted blend above - a real
+      // requirement, not a matter of degree (per dree, 2026-08-25/26).
+      var s = schoolById[id];
+      var greStatus = schoolGREStatus(s.name);
+      if (state.greBonus > 0) {
+        var noGreContribution = greStatus === 'required' ? 0 : state.greBonus;
+        total += noGreContribution;
+        parts.push({ key: 'gre_bonus', label: greStatus === 'required' ? 'Requires GRE (no bonus)' : 'No GRE required', value: null, weightPct: null, contribution: noGreContribution });
+      }
+      if (state.greSubmitBonus > 0) {
+        var submitContribution = greStatus === 'required' ? state.greSubmitBonus : greStatus === 'accepts' ? state.greSubmitBonus / 2 : 0;
+        if (submitContribution > 0) {
+          total += submitContribution;
+          parts.push({ key: 'gre_submit_bonus', label: greStatus === 'required' ? 'GRE required (submission counts fully)' : 'GRE accepted (submission counts partially)', value: null, weightPct: null, contribution: submitContribution });
+        }
+      }
       parts.sort(function (a, b) { return b.contribution - a.contribution; });
       scores[id] = total;
       breakdown[id] = parts;
@@ -10151,26 +10478,64 @@ const PGR_DATA = {
     return { scores: scores, breakdown: breakdown };
   }
 
+  // Six bands, S+ down to D (per dree, 2026-08-25) - no F, since a school someone
+  // deliberately shortlisted doesn't deserve a failing grade. TIER_CODES are the
+  // internal/CSS-safe keys; TIER_LABELS is what actually renders.
+  var TIER_CODES = ['Splus', 'S', 'A', 'B', 'C', 'D'];
+  var TIER_LABELS = { Splus: 'S+', S: 'S', A: 'A', B: 'B', C: 'C', D: 'D' };
+  var TIER_SUBLABELS = {
+    Splus: 'Exceptional Fit', S: 'Strong Fit', A: 'Good Fit',
+    B: 'Worth Considering', C: 'Lower Priority', D: 'Reconsider'
+  };
+
   function bucketToTiers(scores) {
     var ids = Object.keys(scores).sort(function (a, b) { return scores[b] - scores[a]; });
     var n = ids.length;
-    // percentile-based bands so tiers populate sensibly regardless of shortlist size
-    var bands = [
-      { tier: 'S', cut: 0.10 }, { tier: 'A', cut: 0.25 }, { tier: 'B', cut: 0.45 },
-      { tier: 'C', cut: 0.70 }, { tier: 'D', cut: 0.90 }, { tier: 'F', cut: 1.0 }
-    ];
-    var result = { S: [], A: [], B: [], C: [], D: [], F: [] };
+    var result = { Splus: [], S: [], A: [], B: [], C: [], D: [] };
+    if (n === 0) return result;
+    if (n === 1) { result.Splus.push(ids[0]); return result; }
+
+    // Curve-graded like a bell curve against the shortlist's own mean/spread, rather
+    // than a fixed percentile quota or head-count: most schools land in the middle
+    // tiers, and only a real standout - more than 1.5 standard deviations above this
+    // shortlist's own average - reaches S+ alone. Scores that are actually close
+    // together land in the same tier instead of being split by an arbitrary cutoff
+    // (per dree, 2026-08-25: NYU=10 next to Rutgers=8.6/Harvard=8.1 - "not that far
+    // from a 10" - should read as one cluster). Scales naturally with however many
+    // schools are shortlisted since mean/SD are computed fresh each time. Standard
+    // symmetric z-score bands; less meaningful for very small shortlists (2-3 schools)
+    // since SD itself is barely defined there - flag if that case looks off in practice.
+    var vals = ids.map(function (id) { return scores[id]; });
+    var mean = vals.reduce(function (a, b) { return a + b; }, 0) / n;
+    var variance = vals.reduce(function (a, v) { return a + (v - mean) * (v - mean); }, 0) / n;
+    var sd = Math.sqrt(variance);
+
     ids.forEach(function (id, i) {
-      var pct = (i + 1) / n;
-      var tier = bands.filter(function (b) { return pct <= b.cut + 1e-9; })[0];
-      result[(tier || bands[bands.length - 1]).tier].push(id);
+      var z = sd > 0 ? (vals[i] - mean) / sd : 0;
+      var tier = z >= 1.5 ? 'Splus' : z >= 0.5 ? 'S' : z >= 0 ? 'A' : z >= -0.5 ? 'B' : z >= -1.5 ? 'C' : 'D';
+      result[tier].push(id);
     });
     return result;
   }
 
-  function requiresGRE(schoolName) {
+  // Three real states, not a single gradient (per dree, 2026-08-25/26): 'required' (raw
+  // < 5 - a hard-requirement cluster at 2, GRE sometimes +subject test, actually
+  // mandatory; no school scored 3 or 4, so 5 is the real dividing line), 'accepts' (5-9 -
+  // optional/recommended, they'll still look at a submitted score), and 'none' (raw ===
+  // 10, the scale's own "no GRE friction at all" case - won't meaningfully consider one
+  // either way). Used by both the No-GRE bonus (rewards 'accepts' + 'none') and the GRE
+  // Submission bonus (rewards 'required' more than 'accepts', nothing for 'none'). A
+  // school with no researched value is treated as 'none' - no bonus either direction on
+  // an unverified gap, rather than guessing which way to round it.
+  function schoolGREStatus(schoolName) {
     var entry = PGR_DATA.readyMadeFactors.bySchool[schoolName];
-    return !!entry && entry.gre !== null && entry.gre <= 2;
+    if (!entry || entry.gre === null || entry.gre === undefined) return 'none';
+    if (entry.gre < 5) return 'required';
+    if (entry.gre < 10) return 'accepts';
+    return 'none';
+  }
+  function schoolNeedsGRE(schoolName) {
+    return schoolGREStatus(schoolName) === 'required';
   }
 
   function activeFactorSummary() {
@@ -10181,16 +10546,23 @@ const PGR_DATA = {
       .map(function (k) { return { label: weightLabel(k), pct: Math.round(((state.weights[k] || 0) / total) * 100) }; });
     var selectedSpecs = Object.keys(state.specialties).filter(function (k) { return state.specialties[k]; });
     var specNames = (selectedSpecs.length && (state.weights.fit || 0) > 0)
-      ? selectedSpecs.map(function (k) { return PGR_DATA.specialties[k] ? PGR_DATA.specialties[k].name : k; })
+      ? selectedSpecs
+          .sort(function (a, b) { return (state.specialties[b] || 0) - (state.specialties[a] || 0); })
+          .map(function (k) { return (PGR_DATA.specialties[k] ? PGR_DATA.specialties[k].name : k) + ' (' + state.specialties[k] + '/5)'; })
       : null;
-    return { active: active, specNames: specNames };
+    var greBonus = state.greBonus > 0 ? state.greBonus : null;
+    var greSubmitBonus = state.greSubmitBonus > 0 ? state.greSubmitBonus : null;
+    return { active: active, specNames: specNames, greBonus: greBonus, greSubmitBonus: greSubmitBonus };
   }
 
   function renderResultsSummary() {
     var el = document.getElementById('results-summary');
     var summary = activeFactorSummary();
-    var html = '<div class="summary-factors">' + summary.active.map(function (p) {
-      return '<span class="summary-chip">' + escapeHtml(p.label) + ' ' + p.pct + '%</span>';
+    var chips = summary.active.map(function (p) { return escapeHtml(p.label) + ' ' + p.pct + '%'; });
+    if (summary.greBonus) chips.push('No-GRE bonus +' + summary.greBonus);
+    if (summary.greSubmitBonus) chips.push('GRE submission bonus +' + summary.greSubmitBonus);
+    var html = '<div class="summary-factors">' + chips.map(function (c) {
+      return '<span class="summary-chip">' + c + '</span>';
     }).join('') + '</div>';
     if (summary.specNames) {
       html += '<div class="summary-specs">Fit computed from: ' + escapeHtml(summary.specNames.join(', ')) + '</div>';
@@ -10209,30 +10581,42 @@ const PGR_DATA = {
     var tierListEl = document.getElementById('tier-list');
     tierListEl.innerHTML = '';
     var anyGreFlag = false;
-    ['S','A','B','C','D','F'].forEach(function (t) {
+    TIER_CODES.forEach(function (t) {
       var row = document.createElement('div');
       row.className = 'tier-row';
       var badge = document.createElement('div');
-      badge.className = 'tier-badge ' + t; badge.textContent = t;
+      badge.className = 'tier-badge ' + t; badge.textContent = TIER_LABELS[t];
       var schoolsWrap = document.createElement('div');
       schoolsWrap.className = 'tier-schools';
+      var tierLabel = document.createElement('div');
+      tierLabel.className = 'tier-label';
+      tierLabel.textContent = TIER_SUBLABELS[t];
+      schoolsWrap.appendChild(tierLabel);
+      if (!tiers[t].length) {
+        var emptyEl = document.createElement('span');
+        emptyEl.className = 'tier-empty';
+        emptyEl.textContent = '—';
+        schoolsWrap.appendChild(emptyEl);
+      }
       tiers[t].sort(function (a, b) { return scores[b] - scores[a]; }).forEach(function (id) {
         var s = schoolById[id];
-        var flagged = requiresGRE(s.name);
+        var flagged = schoolNeedsGRE(s.name);
         if (flagged) anyGreFlag = true;
         var chip = document.createElement('div');
         chip.className = 'result-chip';
         var head = document.createElement('div');
         head.className = 'chip-head';
         head.innerHTML = '<span>' + escapeHtml(s.name) + '</span>' +
-          (flagged ? '<span class="gre-flag" title="Requires the GRE">&times;</span>' : '') +
+          (flagged ? '<span class="gre-flag" title="Requires the GRE">GRE</span>' : '') +
           '<span class="score">' + scores[id].toFixed(2) + '</span>';
         var bd = document.createElement('div');
         bd.className = 'breakdown';
         breakdown[id].forEach(function (p) {
           var line = document.createElement('div');
           line.className = 'breakdown-row';
-          line.innerHTML = '<span>' + escapeHtml(p.label) + ' — ' + p.value.toFixed(1) + '/10 @ ' + Math.round(p.weightPct * 100) + '%</span>' +
+          var isFlatBonus = p.key === 'gre_bonus' || p.key === 'gre_submit_bonus';
+          var desc = isFlatBonus ? escapeHtml(p.label) : (escapeHtml(p.label) + ' — ' + p.value.toFixed(1) + '/10 @ ' + (p.weightPct * 100).toFixed(1) + '%');
+          line.innerHTML = '<span>' + desc + '</span>' +
             '<span class="bd-contrib">+' + p.contribution.toFixed(2) + '</span>';
           bd.appendChild(line);
         });
@@ -10257,11 +10641,15 @@ const PGR_DATA = {
 
   // ---- share code: state <-> URL hash, so a link/code reproduces the whole session ----
   function serializeState() {
+    var specialties = {};
+    Object.keys(state.specialties).forEach(function (k) { if (state.specialties[k]) specialties[k] = state.specialties[k]; });
     return {
-      v: 1,
+      v: 2,
       shortlist: state.shortlist,
-      specialties: Object.keys(state.specialties).filter(function (k) { return state.specialties[k]; }),
+      specialties: specialties,
       weights: state.weights,
+      greBonus: state.greBonus,
+      greSubmitBonus: state.greSubmitBonus,
       customFactors: state.customFactors
     };
   }
@@ -10269,15 +10657,26 @@ const PGR_DATA = {
   function applyState(s) {
     state.shortlist = Array.isArray(s.shortlist) ? s.shortlist.filter(function (id) { return !!schoolById[id]; }) : [];
     state.specialties = {};
-    (s.specialties || []).forEach(function (k) { if (PGR_DATA.specialties[k]) state.specialties[k] = true; });
+    if (Array.isArray(s.specialties)) {
+      // pre-2026-08-26 share codes: a flat key list, no importance rating - default to 3/5
+      s.specialties.forEach(function (k) { if (PGR_DATA.specialties[k]) state.specialties[k] = 3; });
+    } else if (s.specialties && typeof s.specialties === 'object') {
+      Object.keys(s.specialties).forEach(function (k) {
+        if (PGR_DATA.specialties[k]) state.specialties[k] = s.specialties[k] >= 1 && s.specialties[k] <= 5 ? s.specialties[k] : 3;
+      });
+    }
     state.customFactors = Array.isArray(s.customFactors) ? s.customFactors : [];
+    state.customFactors.forEach(function (f) { if (!f.linked) f.linked = {}; });
     var maxN = 0;
     state.customFactors.forEach(function (f) {
       var m = /^f(\d+)$/.exec(f.id);
       if (m) maxN = Math.max(maxN, parseInt(m[1], 10));
     });
     factorCounter = maxN;
-    state.weights = Object.assign({ prestige: 40, fit: 40, rmf_gre: 0, rmf_funding: 0, rmf_interdisciplinary: 0 }, s.weights || {});
+    state.weights = Object.assign({ prestige: 40, fit: 40, rmf_funding: 0, rmf_interdisciplinary: 0 }, s.weights || {});
+    delete state.weights.rmf_gre; // pre-2026-08-25 share codes may still carry this key
+    state.greBonus = typeof s.greBonus === 'number' ? s.greBonus : 1;
+    state.greSubmitBonus = typeof s.greSubmitBonus === 'number' ? s.greSubmitBonus : 0;
   }
 
   function encodeStateToCode(s) {
@@ -10362,6 +10761,8 @@ const PGR_DATA = {
     var tiers = bucketToTiers(scores);
     var summary = activeFactorSummary();
     var factorTexts = summary.active.map(function (p) { return p.label + ' ' + p.pct + '%'; });
+    if (summary.greBonus) factorTexts.push('No-GRE bonus +' + summary.greBonus);
+    if (summary.greSubmitBonus) factorTexts.push('GRE submission bonus +' + summary.greSubmitBonus);
     if (summary.specNames) factorTexts.push('Fit from: ' + summary.specNames.join(', '));
 
     var W = 1000, pad = 44, badgeW = 60, chipPadX = 12, chipGapX = 8, chipGapY = 10, chipH = 32, rowGapY = 16;
@@ -10372,14 +10773,16 @@ const PGR_DATA = {
     var factorLines = wrapChipList(ctx, factorTexts, W - pad * 2, chipPadX, chipGapX);
 
     var contentW = W - pad * 2 - badgeW - 16;
-    var tierOrder = ['S', 'A', 'B', 'C', 'D', 'F'];
-    var tierColors = { S: '#ff5fa8', A: '#3f6bff', B: '#ff8a3d', C: '#12a67a', D: '#7a5f3a', F: '#e0453f' };
+    var tierOrder = TIER_CODES;
+    var tierColors = { Splus: '#ff5fa8', S: '#c98a1f', A: '#3f6bff', B: '#7c3fd9', C: '#12a67a', D: '#7a5f3a' };
     ctx.font = '500 13px Arial';
+    var labelH = 18;
     var tierLayout = tierOrder.map(function (t) {
       var ids = tiers[t].slice().sort(function (a, b) { return scores[b] - scores[a]; });
       var items = ids.map(function (id) { return schoolById[id].name + '  ' + scores[id].toFixed(2); });
       var lines = items.length ? wrapChipList(ctx, items, contentW, chipPadX, chipGapX) : [];
-      var h = Math.max(badgeW, lines.length ? lines.length * (chipH + chipGapY) - chipGapY : chipH);
+      var contentH = lines.length ? lines.length * (chipH + chipGapY) - chipGapY : chipH;
+      var h = Math.max(badgeW, labelH + contentH);
       return { t: t, lines: lines, h: h };
     });
 
@@ -10433,15 +10836,20 @@ const PGR_DATA = {
       ctx.fillStyle = '#12131a';
       ctx.font = '800 20px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(tl.t, pad + badgeW / 2, rowTop + tl.h / 2 - 10);
+      ctx.fillText(TIER_LABELS[tl.t], pad + badgeW / 2, rowTop + tl.h / 2 - 10);
       ctx.textAlign = 'left';
+
+      ctx.fillStyle = '#8b90a3';
+      ctx.font = '700 10px Arial';
+      ctx.fillText(TIER_SUBLABELS[tl.t].toUpperCase(), pad + badgeW + 16, rowTop + 2);
+      var contentTop = rowTop + labelH;
 
       if (!tl.lines.length) {
         ctx.fillStyle = '#6d7182';
         ctx.font = '400 13px Arial';
-        ctx.fillText('—', pad + badgeW + 16, rowTop + tl.h / 2 - 7);
+        ctx.fillText('—', pad + badgeW + 16, contentTop + (tl.h - labelH) / 2 - 7);
       } else {
-        var cy = rowTop + (tl.h - (tl.lines.length * (chipH + chipGapY) - chipGapY)) / 2;
+        var cy = contentTop + ((tl.h - labelH) - (tl.lines.length * (chipH + chipGapY) - chipGapY)) / 2;
         tl.lines.forEach(function (line) {
           var x = pad + badgeW + 16;
           line.forEach(function (chip) {
@@ -10486,6 +10894,7 @@ const PGR_DATA = {
   renderSpecialtyGroups();
   renderCustomFactors();
   renderWeights();
+  renderGreBonus();
   updateGenerateBtn();
   if (loadedFromLink && state.shortlist.length) {
     renderResults();
