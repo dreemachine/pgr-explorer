@@ -55,6 +55,14 @@
   .wrap { max-width:920px; margin:0 auto; padding:36px 20px 100px; }
   a { color: var(--steel); }
 
+  .beta-banner {
+    background:var(--accent-soft); border:1px solid var(--accent-line);
+    color:var(--ink-soft); font-size:13.5px; line-height:1.55;
+    padding:11px 15px; margin-bottom:24px;
+  }
+  .beta-banner strong { font-family:var(--font-display); font-weight:700; letter-spacing:0.14em; color:var(--accent); }
+  .beta-banner a { color:var(--accent); word-break:break-word; }
+
   header.masthead { position:relative; border-bottom:2px solid var(--line-strong); padding-bottom:24px; margin-bottom:30px; }
   header.masthead::before {
     content:""; position:absolute; top:-1px; left:0; right:0; height:4px;
@@ -317,6 +325,11 @@
 </head>
 <body>
 <div class="wrap">
+
+  <div class="beta-banner">
+    <strong>This tool is in BETA.</strong> Please send any comments or concerns or errors to:
+    <a href="https://forms.gle/g226U1fcUrdXizGX8" target="_blank" rel="noopener">https://forms.gle/g226U1fcUrdXizGX8</a>
+  </div>
 
   <header class="masthead">
     <div class="eyebrow">PGR EXPLORER · BUILD YOUR OWN RANKING</div>
