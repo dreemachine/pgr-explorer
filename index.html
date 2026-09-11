@@ -172,6 +172,19 @@
   }
   .sort-toggle-btn:hover { border-color:var(--accent); color:var(--accent); }
   .sort-toggle-btn.active { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+  .browse-filter-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:16px; }
+  .browse-filter-label {
+    font-family:var(--font-display); font-size:calc(10.5px * var(--a11y-scale, 1)); font-weight:700; text-transform:uppercase;
+    letter-spacing:0.12em; color:var(--ink-faint); margin-right:2px;
+  }
+  .region-toggle-btn {
+    background:none; border:1px solid var(--line-strong); color:var(--ink-faint); font-size:calc(12.5px * var(--a11y-scale, 1));
+    padding:6px 12px; cursor:pointer; font-family:var(--font-body); font-weight:600; border-radius:14px;
+  }
+  .region-toggle-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .region-toggle-btn.active { border-color:var(--steel); color:var(--steel); background:var(--steel-soft); }
+  .region-toggle-btn:focus-visible { outline:3px solid var(--steel); outline-offset:2px; }
+  .browse-empty-note { color:var(--ink-faint); font-size:calc(14px * var(--a11y-scale, 1)); font-style:italic; padding:8px 0; }
   .browse-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:8px; }
   .browse-tile {
     background:var(--panel-raised); border:1px solid var(--line-strong); border-left:2px solid transparent;
@@ -9966,7 +9979,16 @@ const PGR_DATA = {
   var browsePanel = document.getElementById('browse-panel');
   var REGION_ORDER = ["US","UK","Canada","Australasia"];
   var REGION_LABEL = { US: "United States", UK: "United Kingdom", Canada: "Canada", Australasia: "Australasia" };
-  var browseSortMode = 'alpha';
+  var browseSortMode = 'rank';
+  // Which countries' schools are currently shown in the browse panel - all
+  // OFF by default (deliberate, per dree 2026-09-11): the panel opens empty
+  // with the "no countries selected" note visible, so the toggle row itself
+  // is what teaches a first-time user the filter exists, rather than them
+  // never noticing it because everything was already showing. Toggled by
+  // the pills rendered in the filter row; not persisted across visits, same
+  // as browseSortMode above.
+  var activeRegions = {};
+  REGION_ORDER.forEach(function (r) { activeRegions[r] = false; });
 
   function sortSchools(list) {
     if (browseSortMode !== 'rank') return list.sort(function (a, b) { return a.name.localeCompare(b.name); });
@@ -9983,7 +10005,7 @@ const PGR_DATA = {
     browsePanel.innerHTML = '';
     var sortRow = document.createElement('div');
     sortRow.className = 'browse-sort-row';
-    [['alpha', 'Sort: A–Z'], ['rank', 'Sort: Rank']].forEach(function (pair) {
+    [['rank', 'Sort: Rank'], ['alpha', 'Sort: A–Z']].forEach(function (pair) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'sort-toggle-btn' + (browseSortMode === pair[0] ? ' active' : '');
@@ -9992,9 +10014,33 @@ const PGR_DATA = {
       sortRow.appendChild(btn);
     });
     browsePanel.appendChild(sortRow);
+
+    var filterRow = document.createElement('div');
+    filterRow.className = 'browse-filter-row';
+    var filterLabel = document.createElement('span');
+    filterLabel.className = 'browse-filter-label';
+    filterLabel.textContent = 'Countries:';
+    filterRow.appendChild(filterLabel);
     REGION_ORDER.forEach(function (region) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'region-toggle-btn' + (activeRegions[region] ? ' active' : '');
+      btn.setAttribute('aria-pressed', String(!!activeRegions[region]));
+      btn.textContent = REGION_LABEL[region];
+      btn.addEventListener('click', function () {
+        activeRegions[region] = !activeRegions[region];
+        renderBrowsePanel();
+      });
+      filterRow.appendChild(btn);
+    });
+    browsePanel.appendChild(filterRow);
+
+    var shownAny = false;
+    REGION_ORDER.forEach(function (region) {
+      if (!activeRegions[region]) return;
       var schoolsInRegion = sortSchools(PGR_DATA.schools.filter(function (s) { return regionByName[s.name] === region; }));
       if (!schoolsInRegion.length) return;
+      shownAny = true;
 
       var group = document.createElement('div');
       group.className = 'browse-region';
@@ -10019,6 +10065,13 @@ const PGR_DATA = {
       group.appendChild(grid);
       browsePanel.appendChild(group);
     });
+
+    if (!shownAny) {
+      var empty = document.createElement('div');
+      empty.className = 'browse-empty-note';
+      empty.textContent = 'No countries selected — pick one or more above to see schools.';
+      browsePanel.appendChild(empty);
+    }
   }
 
   browseToggleBtn.addEventListener('click', function () {
